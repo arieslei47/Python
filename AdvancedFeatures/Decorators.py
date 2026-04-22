@@ -9,8 +9,10 @@
         不修改原函数的代码和调用方式；
     给原函数动态添加额外功能（比如日志、计时、权限校验）。
 """
-
+import time
 from functools import wraps
+from time import sleep
+
 
 def log(level="INFO"):
 
@@ -62,11 +64,32 @@ print(add.__doc__)   # 输出 None
 
 print("========= 分隔符：以下为实战内容 =========")
 
-# 函数计时：
 
+print(" ### 装饰器 - 函数计时 ### ")
+# 函数计时装饰器：
+def getTime(funct):
 
+    @wraps(funct)
+    def ti(*args , **kwargs):
 
+        startTime = time.time()
+        result = funct(*args , **kwargs)
+        endTime = time.time()
+        print(f"函数 {funct.__name__} 运行时长：{endTime - startTime:.4f}秒")
+        return result
 
+    return ti
+
+@getTime
+def calculateNum(a , b , c , d):
+    time.sleep(1)
+    z = ( a + b ) * c / d
+    return z
+
+var = calculateNum(1 , 2 , 3 , 5)
+print(var)
+
+print(" ### 装饰器 - 异常捕获 ### ")
 
 
 
