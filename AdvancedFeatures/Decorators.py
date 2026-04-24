@@ -11,8 +11,6 @@
 """
 import time
 from functools import wraps
-from time import sleep
-
 
 def log(level="INFO"):
 
@@ -67,26 +65,26 @@ print("========= 分隔符：以下为实战内容 =========")
 
 print(" ### 装饰器 - 函数计时 ### ")
 # 函数计时装饰器：
-def getTime(funct):
+def gettime(funct):
 
     @wraps(funct)
     def ti(*args , **kwargs):
 
-        startTime = time.time()
+        starttime = time.time()
         result = funct(*args , **kwargs)
-        endTime = time.time()
-        print(f"函数 {funct.__name__} 运行时长：{endTime - startTime:.4f}秒")
+        endtime = time.time()
+        print(f"函数 {funct.__name__} 运行时长：{endtime - starttime:.4f}秒")
         return result
 
     return ti
 
-@getTime
-def calculateNum(a , b , c , d):
+@gettime
+def calculatenum(a , b , c , d):
     time.sleep(1)
     z = ( a + b ) * c / d
     return z
 
-var = calculateNum(1 , 2 , 3 , 5)
+var = calculatenum(1 , 2 , 3 , 5)
 print(var)
 
 print(" ### 装饰器 - 异常捕获 ### ")
