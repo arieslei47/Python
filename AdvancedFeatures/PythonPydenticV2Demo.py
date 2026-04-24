@@ -2,7 +2,9 @@
 # coding=utf-8
 
 from datetime import datetime
-from pydantic import BaseModel, field_validator
+from sysconfig import __main__
+
+from pydantic import BaseModel, field_validator, model_validator
 import re
 
 """
@@ -21,7 +23,7 @@ class CheckUser(BaseModel):
     password: str
     email: str
     register_date: str = datetime.now().strftime("%Y-%m-%d")
-    phone: int
+    phone: str | None = None    # 单一个None 表示可以不传值，两个None表示，可以不传值，不传值值为空
 
     @field_validator("username")
     def checkUserName(cls , value : str) -> str:
@@ -34,10 +36,42 @@ class CheckUser(BaseModel):
 
         return value
 
-    #@field_validator("password")
-    #def checkPassWord(cls , value : str) -> str:
+    @field_validator("password")
+    def checkPassWord(cls , value : str) -> str:
+
+        if not len(value) >= 8:
+            raise ValueError("密码长度不符")
+        if not (re.search(r"[a-zA-Z]", value) and re.search(r"[0-9]", value)):
+            raise ValueError("密码必须包含字母和数字")
+
+        return value
+
+    @field_validator("phone")
+    def checkPhone(cls , value : str | None ) -> str | None :
+
+        if value is None:
+            return None
+
+        if not len(value) == 11:
+            raise ValueError("电话长度不对")
+
+        if not re.match(r"^1\d{10}$", value):
+            raise ValueError("手机号必须是11位数字，以1开头")
+
+        return value
+
+    @model_validator(mode="after")
+    def checkRegisterDate(self) -> "CheckUser" :
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        if self.register_date > today:
+            raise ValueError("注册日期不能晚于今天")
+        return self
 
 
+if __name__ == "__main__" :
+    result = CheckUser(username="47151",password="qwer4345",email="47151@qq.com",phone="13240810066")
+    print(result.model_dump())
 
 
 
