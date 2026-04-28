@@ -2,7 +2,6 @@
 # coding=utf-8
 
 from datetime import datetime
-from sysconfig import __main__
 
 from pydantic import BaseModel, field_validator, model_validator
 import re
