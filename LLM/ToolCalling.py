@@ -46,10 +46,12 @@ tools = [web_search]
 # 这行代码 = 给 AI Agent 写「固定剧本 + 严格规矩」
 # 是 LangChain Tool Calling 必须这么写的固定格式，少一行都跑不起来！
 prompt = ChatPromptTemplate.from_messages([
-    # system（系统提示词）：给 AI 定铁规矩
-    ("system", "你必须依靠工具返回的数据回答，不能瞎编"),
+    # system（系统提示词）：给 AI 定铁规矩，
+    ("system","{role}"),
     # human（用户输入）= 放你的问题
-    ("human", "{input}"),
+    # user 和 human 是一个东西
+    #("human", "{input}"),
+    ("user", "任务：{input}\n要求：{cot_rule}"),
     # agent_scratchpad = AI 的草稿本 / 记事本（最难懂、最关键）
     # 大白话翻译：
     # “AI，我把你刚才调用工具的所有记录、搜索到的数据，
@@ -67,9 +69,13 @@ agent = create_tool_calling_agent(llm, tools, prompt)
 # 大模型什么时候决定调用工具、传了什么参数，方便你看懂流程。
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-
 if __name__ == "__main__":
-    res = agent_executor.invoke({"input": "2026年LangGraph市场占比"})
+    res = agent_executor.invoke(
+        {"role" : "你是一个擅长调用工具的AI助手，严格按照Tool参数要求传递信息，禁止编造参数、禁止多余解释", # CoT思维链约束 + 工具列表 + 用户问题
+         "input" : "2026年LangGraph市场占比",
+         "cot_rule" : "输出你得出结论的每一个步骤，不能瞎说，每一个结论结尾，都要加一个：喵~"
+         })
+
     print("\n最终回答：", res["output"])
 
 

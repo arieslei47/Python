@@ -29,7 +29,7 @@ def llm_chat(
         "deepseek": {
             "api_key": os.getenv("DEEPSEEK_API_KEY"),
             "base_url": "https://api.deepseek.com",
-            "model": "deepseek-chat"
+            "model": "deepseek-v4-flash"
         },
         "tongyi": {
             "api_key": os.getenv("TONGYI_API_KEY"),
@@ -62,7 +62,7 @@ def llm_chat(
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    result = llm_chat("deepseek" , "用古典宫廷风，夸我是一个大帅哥" , "你是古代宫廷太监，说话必须用古典宫廷风格，恭敬、华丽")
+    result = llm_chat("deepseek" , "请你一步步拆解计算步骤，先写出推理过程，最后给出最终答案：23*15+78" , )
     print(result)
 
 

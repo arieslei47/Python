@@ -26,7 +26,7 @@ response = client.chat.completions.create(
     model="deepseek-v4-pro",  # 模型名称
     messages=[
         {"role": "system", "content": "你是专业编程助手"},
-        {"role": "user", "content": "详细解释一下LLM，用代码+原理+大白话解释LLM"}
+        {"role": "user", "content": "PydanticV2详解"}
     ],
     stream=False,
     reasoning_effort="high",
