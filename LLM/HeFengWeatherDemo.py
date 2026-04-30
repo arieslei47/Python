@@ -2,17 +2,16 @@
 # coding=utf-8
 
 import os
+
 import requests
 
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from langchain.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel , Field
-
-
-""" 最简单的一个LangChain Demo ，没有工具的写法 """
 
 load_dotenv()
 
@@ -32,17 +31,18 @@ class CheckParm(BaseModel) :
 def hefeng_weather(city : str) -> str :
 
     """
-        查询指定城市的实时天气，包括天气状况和当前温度。
+        查询指定城市的实时、历史天气，包括天气状况和当前温度。
         参数：city - 城市名称，例如：北京、上海、重庆
     """
 
-    """查询指定城市的实时天气"""
+    """查询指定城市的天气"""
     try:
         key = os.getenv('HEFENG_API_KEY')
+        api_host = 'ny6heyhcgu.re.qweatherapi.com'
         print(f"【调试】使用的和风Key: {key}")  # 打印Key，排查是否正确
 
         # 1. 请求城市ID
-        city_url = f"https://geoapi.qweather.com/v2/city/lookup?location={city}&key={key}"
+        city_url = f"https://{api_host}/geo/v2/city/lookup?location={city}&key={key}"
         resp = requests.get(city_url, timeout=10)
 
         # 🔥 关键：打印原始返回内容，看API返回了啥
@@ -58,11 +58,21 @@ def hefeng_weather(city : str) -> str :
         if city_data.get("code") != "200":
             return f"城市查询失败，错误码：{city_data.get('code')}"
 
-        location_id = city_data["location"][0]["id"]
+        location_id = 0
+
+        for city in city_data['location'] :
+            if city['name'] == '北京' :
+                location_id = city['id']
+                break
+
+        todayis = datetime.now() + timedelta(days=-1)
+        dateis = todayis.strftime("%Y%m%d")
+        print("昨天时间")
 
         # 2. 请求天气
-        weather_url = f"https://devapi.qweather.com/v7/weather/now?location={location_id}&key={os.getenv('HEFENG_API_KEY')}"
-        weather_resp = requests.get(weather_url, timeout=10)
+        #weather_url = f"https://{api_host}/v7/weather/now?location={location_id}&key={key}"
+        weatherHis_url = f"https://{api_host}/v7/historical/weather?location={location_id}&date={dateis}&key={key}"
+        weather_resp = requests.get(weatherHis_url, timeout=10)
         print(f"【调试】天气API返回: {weather_resp.text}")
 
         weather_data = weather_resp.json()
@@ -97,7 +107,7 @@ agent = create_tool_calling_agent(llm , tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
 if __name__ == "__main__" :
-    res = agent_executor.invoke({"input":"查询北京天气"})
+    res = agent_executor.invoke({"input":"查询昨天北京天气"})
     print(res["output"])
 
 
